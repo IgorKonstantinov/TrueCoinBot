@@ -14,7 +14,8 @@ class Settings(BaseSettings):
     AUTO_SPIN: bool = True
 
     #BOOST
-    APPLY_DAILY_ENERGY: bool = True
+    SPINS_DAILY_AD: bool = True
+    APPLY_DAILY_REWARD: bool = True
     APPLY_DAILY_TURBO: bool = True
 
     USE_PROXY_FROM_FILE: bool = False

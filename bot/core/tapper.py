@@ -155,9 +155,34 @@ class Tapper:
                         response_json = {}
                         return response_json
 
-            match action:
                 case 'spin':
                     url = f"https://api.true.world/api/game/{action}"
+                    logger.info(f"{self.session_name} | bot action: [{inspect.currentframe().f_code.co_name}], "
+                                f"action [{action}]")
+                    response = await http_client.get(url=url)
+                    response.raise_for_status()
+                    if response.ok:
+                        response_json = await response.json()
+                        return response_json
+                    else:
+                        response_json = {}
+                        return response_json
+
+                case 'getLastReward':
+                    url = f"https://api.true.world/api/dailyReward/{action}"
+                    logger.info(f"{self.session_name} | bot action: [{inspect.currentframe().f_code.co_name}], "
+                                f"action [{action}]")
+                    response = await http_client.get(url=url)
+                    response.raise_for_status()
+                    if response.ok:
+                        response_json = await response.json()
+                        return response_json
+                    else:
+                        response_json = {}
+                        return response_json
+
+                case 'collectReward':
+                    url = f"https://api.true.world/api/dailyReward/{action}"
                     logger.info(f"{self.session_name} | bot action: [{inspect.currentframe().f_code.co_name}], "
                                 f"action [{action}]")
                     response = await http_client.get(url=url)
@@ -201,6 +226,24 @@ class Tapper:
                                f"Username: <c>{login_username}</c>, Coins: <c>{login_coins}</c> | "
                                f"Spins: <e>{login_currentSpins}/{login_maxSpins}</e> ")
 
+                if settings.APPLY_DAILY_REWARD:
+                    action = 'getLastReward'
+                    api_data = await self.api(http_client=http_client, action=action)
+                    if api_data:
+                        logger.success(f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
+                        date_from_str = datetime.strptime(api_data['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ").date()
+                        current_date = datetime.utcnow().date()
+                        if date_from_str != current_date:
+                            action = 'collectReward'
+                            api_data = await self.api(http_client=http_client, action=action)
+                            if api_data:
+                                logger.success(
+                                    f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
+                            else:
+                                logger.error(
+                                    f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
+
+
                 if settings.AUTO_SPIN:
                     action = 'getCurrentSpins'
                     api_data = await self.api(http_client=http_client, action=action)
@@ -221,8 +264,13 @@ class Tapper:
                         else:
                             currentSpins = 0
 
-                # if settings.AUTO_TASK:
-                #     for mission in missions:
+                if settings.SPINS_DAILY_AD:
+                    boosts = login_data['boosts']
+                    for boost in boosts:
+                        if boost['cost'] == 0:
+                            print(boost)
+
+
                 #         random_sleep = random.randint(*settings.SLEEP_RANDOM)
                 #
                 #         if not mission.get('status'):
