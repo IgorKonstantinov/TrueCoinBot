@@ -1,7 +1,7 @@
 version: '3'
 services:
-  topcoinbot:
-    container_name: 'TopCoinBot'
+  truecoinbot:
+    container_name: 'TrueCoinBot'
     build:
       context: .
     stop_signal: SIGINT
