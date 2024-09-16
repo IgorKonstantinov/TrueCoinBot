@@ -232,7 +232,7 @@ class Tapper:
                     logger.success(f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
                     collectReward = False
 
-                    if api_data == '{}':
+                    if api_data == {}:
                         collectReward = True
                     else:
                         date_from_str = datetime.strptime(api_data['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ").date()
