@@ -192,8 +192,6 @@ class Tapper:
                 logger.info(f"Generate new access_token: {access_token[:64]}")
                 http_client.headers["authorization"] = f"Bearer {access_token}"
 
-                # player_data = await self.getUser(http_client=http_client)
-                #
                 login_username = login_data['user'].get('username')
                 login_coins = login_data['user'].get('coins')
                 login_currentSpins = login_data['user'].get('currentSpins')

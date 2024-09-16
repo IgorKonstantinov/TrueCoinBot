@@ -7,11 +7,9 @@ class Settings(BaseSettings):
     API_HASH: str
     API_KEY: str
 
-    SLEEP_RANDOM: list = [5, 10]
-    SLEEP_BETWEEN_TAP: list[int] = [10, 15]
+    SLEEP_RANDOM: list = [15, 30]
     SLEEP_BETWEEN_MINING: list[int] = [1800, 3600]
 
-    AUTO_TAP: bool = True
     AUTO_TASK: bool = True
     AUTO_SPIN: bool = True
 
