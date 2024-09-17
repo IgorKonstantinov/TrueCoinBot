@@ -64,7 +64,7 @@ class Tapper:
 
             while True:
                 try:
-                    peer = await self.tg_client.resolve_peer('NotBoredPuppies_bot')
+                    peer = await self.tg_client.resolve_peer('true_coin_bot')
                     break
                 except FloodWait as fl:
                     fls = fl.value
@@ -79,7 +79,7 @@ class Tapper:
                 bot=peer,
                 platform='android',
                 from_bot_menu=False,
-                url='https://frontend.router9.xyz/'
+                url='https://bot.true.world/'
             ))
 
             auth_url = web_view.url
