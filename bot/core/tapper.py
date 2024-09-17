@@ -289,7 +289,7 @@ class Tapper:
                                 if api_data:
                                     logger.success(
                                         f"{self.session_name} | Bot action: <red>[api/{action}/{ad_spins}/{boost['dailyLimit']}]</red> : "
-                                        f"<c>{api_data['result']}</c>")
+                                        f"<c>{api_data['user']}</c>")
                                     ad_spins += 1
 
                 if settings.AUTO_SPIN:
