@@ -273,7 +273,7 @@ class Tapper:
                     ad_spins = 0
                     for boost in boosts:
                         if boost['cost'] == 0:
-                            print(boosts)
+                            print(boost['code'], boost['cost'], boost['dailyLimit'])
                             for userboost in login_userBoosts:
                                 date_from_str = datetime.strptime(userboost['createdDate'],
                                                                   "%Y-%m-%dT%H:%M:%S.%fZ").date()
@@ -287,10 +287,11 @@ class Tapper:
                                 api_value = boost['code']
                                 api_data = await self.api(http_client=http_client, action=action, api_value=api_value)
                                 if api_data:
+                                    ad_spins += 1
                                     logger.success(
                                         f"{self.session_name} | Bot action: <red>[api/{action}/{ad_spins}/{boost['dailyLimit']}]</red> : "
                                         f"<c>{api_data['user']}</c>")
-                                    ad_spins += 1
+
 
                 if settings.AUTO_SPIN:
                     action = 'getCurrentSpins'
