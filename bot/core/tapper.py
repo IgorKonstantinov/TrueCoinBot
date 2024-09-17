@@ -134,7 +134,7 @@ class Tapper:
             logger.error(f"{self.session_name} | Unknown error when login: {error} ")
             await asyncio.sleep(delay=30)
 
-    async def api(self, http_client: aiohttp.ClientSession, action='', api_id: int = 0):
+    async def api(self, http_client: aiohttp.ClientSession, action='', api_value: str = ''):
         try:
             sleep_spins = random.randint(*settings.SLEEP_BETWEEN_SPINS)
             current_time = datetime.utcnow()
@@ -195,6 +195,20 @@ class Tapper:
                         response_json = {}
                         return response_json
 
+                case 'boosts_buy':
+                    url = f"https://api.true.world/api/boosts/buy"
+                    data = {'code': api_value}
+                    logger.info(f"{self.session_name} | bot action: [{inspect.currentframe().f_code.co_name}], "
+                                f"action [{action}], data [{data}]")
+                    response = await http_client.post(url=url, json=data)
+                    response.raise_for_status()
+                    if response.ok:
+                        response_json = await response.json()
+                        return response_json
+                    else:
+                        response_json = {}
+                        return response_json
+
                 case _:
                     logger.error(f"{self.session_name} | ERROR API | no api action ")
 
@@ -208,6 +222,7 @@ class Tapper:
                 #
                 random_sleep = random.randint(*settings.SLEEP_RANDOM)
                 mining_sleep = random.randint(*settings.SLEEP_BETWEEN_MINING)
+                current_date = datetime.utcnow().date()
 
                 http_client = CloudflareScraper(headers=headers)
                 http_client.headers["auth-key"] = settings.API_KEY
@@ -222,6 +237,8 @@ class Tapper:
                 login_coins = login_data['user'].get('coins')
                 login_currentSpins = login_data['user'].get('currentSpins')
                 login_maxSpins = login_data['user'].get('maxSpins')
+
+                login_userBoosts = login_data['userBoosts']
 
                 logger.success(f"{self.session_name} "
                                f"Username: <c>{login_username}</c>, Coins: <c>{login_coins}</c> | "
@@ -273,137 +290,34 @@ class Tapper:
 
                 if settings.SPINS_DAILY_AD:
                     boosts = login_data['boosts']
+                    ad_spins = 0
                     for boost in boosts:
                         if boost['cost'] == 0:
-                            print(boost)
+                            print(boosts)
+                            for userboost in login_userBoosts:
+                                date_from_str = datetime.strptime(userboost['createdDate'],
+                                                                  "%Y-%m-%dT%H:%M:%S.%fZ").date()
+                                if userboost['code'] == boost['code'] and date_from_str == current_date:
+                                    ad_spins += 1
+                                    print(userboost)
+                            print(ad_spins, boost['dailyLimit'])
 
+                            while ad_spins < boost['dailyLimit']:
+                                action = 'boosts_buy'
+                                api_value = boost['code']
+                                api_data = await self.api(http_client=http_client, action=action, api_value=api_value)
+                                if api_data:
+                                    logger.success(
+                                        f"{self.session_name} | Bot action: <red>[api/{action}/{ad_spins}/{boost['dailyLimit']}]</red> : "
+                                        f"<c>{api_data['result']}</c>")
+                                    ad_spins += 1
 
-                #         random_sleep = random.randint(*settings.SLEEP_RANDOM)
-                #
-                #         if not mission.get('status'):
-                #             task_action = 'startMission'
-                #             logger.info(f"{self.session_name} | Sleep {random_sleep:,}s before: <g>[task/{task_action}/{mission['id']}]:</g> <c>{mission['name']}</c>")
-                #             mission_data = await self.api(http_client=http_client, api_action=task_action, api_id=mission['id'])
-                #             if mission_data:
-                #                 logger.success(f"{self.session_name} | Bot action: <red>[task/{task_action}/{mission['id']}]</red> : <c>{mission_data}</c>")
-                #             await asyncio.sleep(delay=random_sleep)
-                #
-                #             for task in mission['tasks']:
-                #                 task_action = 'startTask'
-                #                 logger.info(f"{self.session_name} | Sleep {random_sleep:,}s before: <g>[task/{task_action}/{task['id']}]:</g> <c>{task['name']}</c>")
-                #                 task_data = await self.api(http_client=http_client, api_action=task_action, api_id=task['id'])
-                #                 if task_data:
-                #                     logger.success(
-                #                         f"{self.session_name} | Bot action: <red>[task/{task_action}/{mission['id']}]</red> : <c>{task_data}</c>")
-                #                 await asyncio.sleep(delay=random_sleep)
-                #         else:
-                #             for task in mission['tasks']:
-                #                 if task['status'] != 3 and task['id'] not in self.skip_tasks_id:
-                #                     task_action = 'checkTask'
-                #                     logger.info(f"{self.session_name} | Sleep {random_sleep:,}s before: <g>[task/{task_action}/{task['id']}]:</g> <c>{task['name']}</c>")
-                #                     task_data = await self.api(http_client=http_client, api_action=task_action, api_id=task['id'])
-                #
-                #                     #if task_data and task_data.get('status') == 'wait':
-                #                     if task_data:
-                #                         logger.success(f"{self.session_name} | Bot action: <red>[task/{task_action}/{mission['id']}]</red> : <c>{task_data}</c>")
-                #                         for tasks in tasks_data:
-                #                             if tasks['id'] == task['id']:
-                #                                 task['time'] = int(time())
-                #                                 found = True
-                #                                 break
-                #                         if not found:
-                #                             tasks_data.append({'id': task['id'], 'time': int(time())})
-                #                         logger.info(f"{self.session_name} | <g>[task/{task_action}/{task['id']}]:</g> <c>{found}</c>")
-                #                     else:
-                #                         for tasks in tasks_data:
-                #                             if tasks['id'] == task['id']:
-                #                                 task['time'] = int(time())
-                #                                 found = True
-                #                                 break
-                #                         if not found:
-                #                             tasks_data.append({'id': task['id'], 'time': int(time())})
-                #                         logger.info(
-                #                             f"{self.session_name} | <g>[task/{task_action}/{task['id']}]:</g> <c>{found}</c>")
-                #                     await asyncio.sleep(delay=random_sleep)
-                #
-                # for tasks_data_id in tasks_data:
-                #     if (time() - tasks_data_id['time'] > 3600*8) and (tasks_data_id['id'] in self.skip_tasks_id):
-                #         print('TIMEOUT:REMOVE', tasks_data_id['id'], tasks_data_id['time'])
-                #         self.skip_tasks_id.remove(tasks_data_id['id'])
-                #     else:
-                #         if tasks_data_id['id'] not in self.skip_tasks_id:
-                #             print('TIMEOUT:ADD', tasks_data_id['id'], tasks_data_id['time'])
-                #             self.skip_tasks_id.append(tasks_data_id['id'])
-                #         else:
-                #             print('TIMEOUT:LIST', tasks_data_id['id'], tasks_data_id['time'])
-                #
-                #     #print(self.skip_tasks_id)
-                #     #print(tasks_data)
-                #
-                # if settings.AUTO_TAP:
-                #     while topcoinbot_energy > settings.MIN_AVAILABLE_ENERGY:
-                #         taps = random.randint(*settings.RANDOM_TAPS_COUNT)
-                #         tap_sleep = random.randint(*settings.SLEEP_BETWEEN_TAP)
-                #
-                #         status_options = await self.task_tap_options(http_client=http_client_options)
-                #         if status_options: print("Tap Options sent successfully")
-                #
-                #         task_data = await self.task_tap(http_client=http_client, taps=taps)
-                #
-                #         topcoinbot_balance = task_data['balance']
-                #         status_calc_taps = taps * topcoinbot_multitap
-                #         topcoinbot_energy = task_data['energy']
-                #         topcoinbot_score = task_data['score']
-                #
-                #         logger.success(f"{self.session_name} | bot action: <red>[tap/{taps}]</red> | "
-                #                f"Balance: <c>{topcoinbot_balance:,}</c> (<g>+{status_calc_taps}</g>), Energy: <e>{topcoinbot_energy}</e>, Score: <e>{topcoinbot_score:,}</e> "
-                #                f"Sleep: {tap_sleep}s")
-                #         await asyncio.sleep(delay=tap_sleep)
-                #
-                #         if (topcoinbot_boost_fullTankLeft > 0
-                #                 and time() - topcoinbot_boost_fullTankLeft_time >= 1800
-                #                 and topcoinbot_energy < settings.MIN_AVAILABLE_ENERGY
-                #                 and settings.APPLY_DAILY_ENERGY is True):
-                #             logger.info(f"{self.session_name} | Sleep 5s before activating the daily energy boost")
-                #             await asyncio.sleep(delay=5)
-                #
-                #             statusboost: bool = await self.apply_boost_fullTank(http_client=http_client)
-                #             if statusboost is True:
-                #                 logger.success(f"{self.session_name} | Energy boost applied")
-                #                 topcoinbot_energy += 1000
-                #                 topcoinbot_boost_fullTankLeft_time = time()
-                #                 await asyncio.sleep(delay=1)
-                #             continue
-                #
-                #         if (topcoinbot_boost_tappingGuruLeft > 0
-                #                 and time() - topcoinbot_boost_tappingGuruLeft_time >= 1800
-                #                 and settings.APPLY_DAILY_TURBO is True):
-                #             logger.info(f"{self.session_name} | Sleep 5s before activating the daily turbo boost")
-                #             await asyncio.sleep(delay=5)
-                #
-                #             statusboost: bool = await self.apply_boost_tappingGuruLeft(http_client=http_client)
-                #             if statusboost is True:
-                #                 logger.success(f"{self.session_name} | Turbo boost applied")
-                #                 await asyncio.sleep(delay=1)
-                #                 topcoinbot_boost_tappingGuruLeft_time = time()
-                #             continue
-                #     else:
-                #         taps = abs(topcoinbot_energy // topcoinbot_multitap - 1)
-                #         status_options = await self.task_tap_options(http_client=http_client_options)
-                #         if status_options: print("Tap Options sent successfully")
-                #         task_data = await self.task_tap(http_client=http_client, taps=taps)
-                #
-                #         topcoinbot_balance = task_data['balance']
-                #         status_calc_taps = taps * topcoinbot_multitap
-                #         topcoinbot_energy = task_data['energy']
-                #         topcoinbot_score = task_data['score']
-                #         logger.success(f"{self.session_name} | bot action: <red>[tap/{taps}]</red> | "
-                #                f"Balance: <c>{topcoinbot_balance:,}</c> (<g>+{status_calc_taps}</g>), Energy: <e>{topcoinbot_energy:,}</e>, Score: <e>{topcoinbot_score:,}</e>")
 
                 #Final SLEEP
                 logger.info(f"{self.session_name} | Minimum spins reached. Sleep {mining_sleep:,}s")
                 await http_client.close()
-                await asyncio.sleep(delay=mining_sleep)
+                exit()
+                #await asyncio.sleep(delay=mining_sleep)
 
             except InvalidSession as error:
                 raise error
