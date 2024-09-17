@@ -268,26 +268,6 @@ class Tapper:
                             logger.error(
                                 f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
 
-                if settings.AUTO_SPIN:
-                    action = 'getCurrentSpins'
-                    api_data = await self.api(http_client=http_client, action=action)
-                    if api_data:
-                        logger.success(f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
-                        currentSpins = int(api_data.get('currentSpins'))
-                    else:
-                        currentSpins = 0
-
-                    while currentSpins > 0:
-                        action = 'spin'
-                        api_data = await self.api(http_client=http_client, action=action)
-                        if api_data:
-                            logger.success(
-                                f"{self.session_name} | Bot action: <red>[api/{action}/{currentSpins}]</red> : "
-                                f"<c>{api_data['result']}</c>")
-                            currentSpins = int(api_data['user'].get('currentSpins'))
-                        else:
-                            currentSpins = 0
-
                 if settings.SPINS_DAILY_AD:
                     boosts = login_data['boosts']
                     ad_spins = 0
@@ -311,6 +291,26 @@ class Tapper:
                                         f"{self.session_name} | Bot action: <red>[api/{action}/{ad_spins}/{boost['dailyLimit']}]</red> : "
                                         f"<c>{api_data['result']}</c>")
                                     ad_spins += 1
+
+                if settings.AUTO_SPIN:
+                    action = 'getCurrentSpins'
+                    api_data = await self.api(http_client=http_client, action=action)
+                    if api_data:
+                        logger.success(f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
+                        currentSpins = int(api_data.get('currentSpins'))
+                    else:
+                        currentSpins = 0
+
+                    while currentSpins > 0:
+                        action = 'spin'
+                        api_data = await self.api(http_client=http_client, action=action)
+                        if api_data:
+                            logger.success(
+                                f"{self.session_name} | Bot action: <red>[api/{action}/{currentSpins}]</red> : "
+                                f"<c>{api_data['result']}</c>")
+                            currentSpins = int(api_data['user'].get('currentSpins'))
+                        else:
+                            currentSpins = 0
 
 
                 #Final SLEEP
