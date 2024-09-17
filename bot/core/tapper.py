@@ -83,9 +83,13 @@ class Tapper:
             ))
 
             auth_url = web_view.url
+            # tg_web_data = unquote(
+            #     string=unquote(
+            #         string=auth_url.split('tgWebAppData=', maxsplit=1)[1].split('&tgWebAppVersion', maxsplit=1)[0]))
+
+            # fix Cyrillic letters and service symbols in the name
             tg_web_data = unquote(
-                string=unquote(
-                    string=auth_url.split('tgWebAppData=', maxsplit=1)[1].split('&tgWebAppVersion', maxsplit=1)[0]))
+                string=auth_url.split('tgWebAppData=', maxsplit=1)[1].split('&tgWebAppVersion', maxsplit=1)[0])
 
             self.user_id = (await self.tg_client.get_me()).id
             self.username = ''
