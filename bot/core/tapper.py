@@ -5,8 +5,7 @@ import hashlib
 import pprint
 import random
 from urllib.parse import unquote
-from time import time
-from datetime import datetime
+from datetime import datetime, time
 
 import aiohttp
 import json
@@ -21,6 +20,13 @@ from bot.config import settings
 from bot.utils import logger
 from bot.exceptions import InvalidSession
 from .headers import headers
+
+
+def is_time_allowed():
+    current_time = datetime.now().time()
+    if current_time >= time(0, 0) and current_time < time(6, 0):
+        return False
+    return True
 
 class Tapper:
     def __init__(self, tg_client: Client):
@@ -249,7 +255,7 @@ class Tapper:
                                f"Username: <c>{login_username}</c>, Coins: <c>{login_coins}</c> | "
                                f"Spins: <e>{login_currentSpins}/{login_maxSpins}</e> ")
 
-                if settings.APPLY_DAILY_REWARD:
+                if settings.APPLY_DAILY_REWARD and is_time_allowed():
                     action = 'getLastReward'
                     api_data = await self.api(http_client=http_client, action=action)
                     logger.success(f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
@@ -273,7 +279,7 @@ class Tapper:
                             logger.error(
                                 f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
 
-                if settings.SPINS_DAILY_AD:
+                if settings.SPINS_DAILY_AD and is_time_allowed():
                     boosts = login_data['boosts']
                     ad_spins = 0
                     for boost in boosts:
@@ -296,7 +302,6 @@ class Tapper:
                                     logger.success(
                                         f"{self.session_name} | Bot action: <red>[api/{action}/{ad_spins}/{boost['dailyLimit']}]</red> : "
                                         f"<c>{api_data['user']}</c>")
-
 
                 if settings.AUTO_SPIN:
                     action = 'getCurrentSpins'
@@ -322,8 +327,7 @@ class Tapper:
                 #Final SLEEP
                 logger.info(f"{self.session_name} | Minimum spins reached. Sleep {mining_sleep:,}s")
                 await http_client.close()
-                exit()
-                #await asyncio.sleep(delay=mining_sleep)
+                await asyncio.sleep(delay=mining_sleep)
 
             except InvalidSession as error:
                 raise error
