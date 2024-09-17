@@ -200,6 +200,7 @@ class Tapper:
                     data = {'code': api_value}
                     logger.info(f"{self.session_name} | bot action: [{inspect.currentframe().f_code.co_name}], "
                                 f"action [{action}], data [{data}]")
+                    await asyncio.sleep(delay=random.randint(15,30))
                     response = await http_client.post(url=url, json=data)
                     response.raise_for_status()
                     if response.ok:
