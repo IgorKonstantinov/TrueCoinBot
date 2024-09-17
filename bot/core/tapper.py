@@ -136,10 +136,11 @@ class Tapper:
 
     async def api(self, http_client: aiohttp.ClientSession, action='', api_id: int = 0):
         try:
+            sleep_spins = random.randint(*settings.SLEEP_BETWEEN_SPINS)
             current_time = datetime.utcnow()
             formatted_time = current_time.strftime('%Y-%m-%dT%H:%M:%SZ')
             http_client.headers["sendtime"] = f"{formatted_time}"
-            await asyncio.sleep(delay=self.random_sleep)
+            await asyncio.sleep(delay=sleep_spins)
 
             match action:
                 case 'getCurrentSpins':
@@ -249,9 +250,6 @@ class Tapper:
                         else:
                             logger.error(
                                 f"{self.session_name} | Bot action: <red>[api/{action}]</red> : <c>{api_data}</c>")
-
-
-
 
                 if settings.AUTO_SPIN:
                     action = 'getCurrentSpins'

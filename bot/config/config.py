@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     API_KEY: str
 
     SLEEP_RANDOM: list = [15, 30]
+    SLEEP_BETWEEN_SPINS: list[int] = [3, 5]
     SLEEP_BETWEEN_MINING: list[int] = [1800, 3600]
 
     AUTO_TASK: bool = True
