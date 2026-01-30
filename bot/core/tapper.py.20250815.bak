@@ -166,7 +166,7 @@ class Tapper:
                         response_json = {}
                         return response_json
 
-                case 'roll':
+                case 'spin':
                     url = f"https://api.true.world/api/game/{action}"
                     logger.info(f"{self.session_name} | bot action: [{inspect.currentframe().f_code.co_name}], "
                                 f"action [{action}]")
@@ -313,7 +313,7 @@ class Tapper:
                         currentSpins = 0
 
                     while currentSpins > 0:
-                        action = 'roll'
+                        action = 'spin'
                         api_data = await self.api(http_client=http_client, action=action)
                         if api_data:
                             logger.success(
